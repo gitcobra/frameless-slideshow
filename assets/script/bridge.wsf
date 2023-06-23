@@ -14,13 +14,14 @@ var param = [];
 for( var i=0; i < Args.Length; i++ ) {
 	var val = Args.Item(i);
 	if( !/^\//.test(val) ) {
-		if( !/^"/.test(val) )
+		if( !/^"/.test(val) ) {
 			val = '"' + val + '"';
+		}
 	}
 	param.push(val);
 }
 
-//WSH.Echo(param);
+// run frameless-slideshow.hta
 WshShell.Run(HTAFilePath + ' ' + param.join(' '),1 , false)
 
 ]]></script>
