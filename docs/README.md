@@ -154,7 +154,7 @@ Currently this application only works properly on the primary monitor. In relati
 ## Credits
 
 ### Repository
-[GitHub](https://github.com/docsifyjs/docsify/)
+[GitHub](https://github.com/gitcobra/frameless-slideshow)
 
 ### Resources
 
