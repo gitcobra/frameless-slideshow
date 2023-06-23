@@ -1,0 +1,172 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=5">
+<HTA:APPLICATION ID="hta">
+<title>tester.HTA</title>
+</head>
+
+<style>
+
+body {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  margin: 0px;
+}
+#left-col {
+  float: left;
+  white-space: nowrap;
+  width: 140px;
+  padding-top: 3.5em;
+  height: 100%;
+  position: relative;
+}
+#right-col {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  /*left: 10%;
+  top: 0%;*/
+}
+
+#buttons {
+  position :absolute;
+  left: 0px;
+  top: 0px;
+}
+#jslist {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0px;
+  top: 3.5em;
+}
+#output {
+  width: 100%;
+  height: 100%;
+  border: 2px inset white;
+  overflow: auto;
+  font-size: x-small;
+  white-space: nowrap;
+}
+</style>
+
+<body scroll="no">
+
+<div id="left-col">
+  <div id="buttons">
+    code list:<br><button onclick="run()">run</button> <button onclick="clearLog()">clear</button> <button onclick="location.reload()">reload</button>
+  </div>
+  <select id="jslist" multiple size="10"></select>
+</div>
+<div id="right-col">
+  <div id="output"></div>
+</div>
+
+<script>
+var fso = new ActiveXObject("Scripting.FileSystemObject");
+//Shell = new ActiveXObject("Shell.Application");
+//WshShell = new ActiveXObject('WScript.Shell');
+
+window.onload = function() {
+  updateCodeList();
+};
+
+window.console = {
+  indent: 0,
+  log: function(message, color, indent) {
+    if(indent === true) {
+      this.indent++;
+    }
+    
+    var tex = document.createElement('div');
+    message = digObject(message);
+    tex.style.marginLeft = (this.indent) + 'em';
+    
+    tex.innerText = message;
+    
+    if( color )
+      tex.style.color = color;
+    output.appendChild(tex);
+    tex.scrollIntoView(false);
+
+    if(indent === false) {
+      this.indent = Math.max(--this.indent, 0);
+    }
+  }
+};
+
+function digObject(obj, stack) {
+  var output = [];
+  stack = stack || 0;
+  if( typeof obj === 'object' ) {
+    var isArray = obj instanceof Array;
+    for( var prop in obj ) {
+      var item = obj[prop];
+      if( typeof item === 'function' )
+        item = '()';
+      else if( typeof item === 'object' ) {
+        if( stack === 0 && item !== obj )
+          item = digObject(item, stack+1);
+        else
+          item = '{}';
+      }
+      else if( typeof item === 'string' )
+        item = '"'+item+'"';
+      
+      output.push((isArray? '':prop+':') + String(item));
+    }
+    
+    return (isArray ? '[':'{') + output.join(', ') + (isArray ? ']':'}');
+  }
+  else
+    return obj;
+}
+
+// update list
+function updateCodeList() {
+  var codelist = [];
+  try {
+    var jspath = fso.GetParentFolderName(hta.commandLine.replace(/"/g, '')) + '\\testjs';
+    var folder = fso.GetFolder(jspath);
+    var files = new Enumerator(folder.files)
+    for (;!files.atEnd(); files.moveNext()) {
+      var file = files.item();
+      if (/\.js$/i.test(file.Name)) {
+        codelist.push(file.Path);
+      }
+    }
+  } catch(e) {
+    alert(e.message + '\n' + jspath);
+  }
+
+  for( var i=0; i < codelist.length; i++ ) {
+    var path = codelist[i];
+    var opt = document.createElement('option');
+    opt.innerText = path.replace(/^.+\\(?=[^\\]+$)/, '');
+    opt.value = path;
+    jslist.appendChild(opt);
+  }
+}
+
+// execute selected test code
+function run() {
+  var path = jslist.value;
+  if( !path )
+    return;
+  loadscript.src = path;
+}
+
+function clearLog() {
+  output.innerHTML = '';
+}
+
+
+</script>
+<script id="loadscript"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,36 @@
+<body ondragstart="return false;" style="border:1px solid black;">
+<table style="width:100%; height:100%; font-weight:bold; font-family:Impact; text-align:center; font-size:expression((document.body.offsetWidth*0.1|0)+'px');"><tr><td>
+<p id="title" style="color:black; margin:0px; font-family: Arial; font-size:50%;">FramelessSlideShow</p>
+<p id="description" style=" margin:0px;">DROP an Image<br>or a Folder</p>
+<p id="icon" style="font-family:Webdings; color:black; margin:0px; font-size:160%;">&#xd2;</P>
+</td></tr></table>
+
+<script>
+//
+// blink the icon
+//
+var intervalId;
+var dispFlag = true;
+var flashing = false;
+var test_count = 0;
+document.body.attachEvent('ondragenter', startFlashing);
+document.body.attachEvent('ondragover', function() {
+  if( !flashing )
+    startFlashing();
+});
+document.body.ondragend = document.body.ondragleave = function() {
+  clearInterval(intervalId);
+  flashing = false;
+};
+
+function startFlashing() {
+  clearInterval(intervalId);
+  flashing = true;
+  intervalId = window.setInterval(function flash(){
+    dispFlag = !dispFlag;
+    icon.style.visibility = dispFlag ? 'visible' : 'hidden';
+    //title.innerHTML = test_count++;
+  }, 200);
+}
+
+</script>

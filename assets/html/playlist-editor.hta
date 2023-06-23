@@ -1,0 +1,181 @@
+<html>
+<head>
+<title>Playlist Editor</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=5">
+<style>v\:* { behavior: url(#default#VML); }</style>
+<style>
+body {
+  background-color: ThreeDFace;
+  padding: 2em 10px 2em 10px;
+  margin: 0px;
+}
+button {
+  border: 1px solid ButtonShadow;
+}
+#controls {
+  position: absolute;
+  white-space: nowrap;
+  left: 10px;
+  top: 8px;
+  width: 100%;
+  height: 1.5em;
+}
+#controlsbottom {
+  position: absolute;
+  white-space: nowrap;
+  left: 10px;
+  bottom: 0.7em;
+  width: 100%;
+  height: 1em;
+  text-align: right;
+}
+#droptargetContainer, #listboxContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+#listbox {
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+}
+.space {
+  margin-left: 0.5em;
+}
+</style>
+<script src="../external/hta-drop-target.js"></script>
+<script>
+window.onerror = function(message, source, line) {
+  alert(message + '\n' + source + '\n' + line);
+};
+
+var playlist; // playlist
+var fs; // FileSystem
+onload = function() {
+  var args = window.dialogArguments || {};
+  playlist = (args.list || []).concat();
+
+  fs = args.fs;
+  var index = args.index;
+  
+  new HtaDropTarget(droptarget, {
+    autoHide: true,
+    observer: listboxContainer,
+    htmlFile: 'drop-target.html',
+    
+    // detect dragging over inner element frames
+    ondrop: function(path) {
+      var added = fs.parsePath(path, /\.(jpe?g|gif|png|bmp|ico)$/ig, function() {
+        return confirm('extract the zip?');
+      });
+      if( added ) {
+        playlist = playlist.concat(added);
+        updateCombobox();
+      }
+    }
+  });
+  
+  updateCombobox();
+  if( listbox.options.length )
+    listbox.selectedIndex = index;
+};
+
+function updateListCount() {
+  index.innerHTML = '(' + playlist.length + ')';
+}
+
+function updateCombobox() {
+  var html =
+    playlist.join('\n')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+  html = '<Option>'+ html.replace(/\n/g, '<Option>') + '</Option>';
+  listboxContainer.innerHTML = '<select id="listbox" size="8" multiple>' + html + '</select>';
+  updateListCount();
+}
+
+function addList() {
+  var list = fs.selectImageFile();
+  if( !list )
+    return;
+  playlist = playlist.concat(list);
+  updateCombobox();
+}
+
+function removeFromList() {
+  var lastSelectedIndex = 0;
+  for( var i=playlist.length; i--; ) {
+    if( listbox.options[i].selected ) {
+      listbox.remove(i);
+      playlist.splice(i, 1);
+      lastSelectedIndex = i;
+    }
+  }
+
+  if( listbox.options.length ) {
+    if( lastSelectedIndex - 1 >= 0 )
+      listbox.selectedIndex = lastSelectedIndex - 1;
+    else
+      listbox.selectedIndex = 0;
+  }
+  
+  updateListCount();
+}
+function clearList() {
+  playlist.length = 0;
+  listbox.options.length = 0;
+  updateListCount();
+}
+
+var sortMethod = true;
+function sort() {
+  playlist.sort(sortMethod ? function(a,b){return a>b ? 1 : -1} : function(a,b){return b>a ? 1:-1});
+  sortMethod = !sortMethod;
+  updateCombobox();
+}
+function shuffle() {
+  var l = playlist;
+  var tmp, t;
+  for( var i=l.length; i--; ) {
+    t = Math.random()*i|0;
+    tmp = l[i];
+    l[i] = l[t];
+    l[t] = tmp;
+  }
+  updateCombobox();
+}
+
+function apply() {
+  window.returnValue = playlist;
+  window.close();
+}
+
+</script>
+
+</head>
+<body scroll="no"></body>
+
+<div id="controls">
+  <label>Playlist: </label> <label id="index" style="width:2em; text-align:right;">(0)</label>&nbsp;
+  <button onclick="addList()">Add</button>
+  <button onclick="removeFromList()">Del</button>
+  <!-- <button >Up</button><button>Down</button> --> <button onclick="sort()">Sort</button> <button onclick="shuffle()">Shuffle</button>
+  <button onclick="clearList()" style="margin-left:2em;">Clear</button>
+</div>
+
+<div id="droptargetContainer">
+<div id="listboxContainer"></div>
+<div id="droptarget" style="display:none; width:100%; height:100%; position:absolute; left:0px; top:0px;"></div>
+</div>
+
+<div id="controlsbottom">
+  <div style="position:absolute; left:0px; top:0px;"></div>
+  <div style="position:absolute; right:0px; top:0px;"><button onclick="apply()" style="margin-left:1em;">Apply</button><button onclick="window.close()">Cancel</button></div>
+</div>
+
+</body>
+</html>

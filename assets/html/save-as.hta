@@ -1,0 +1,382 @@
+<html>
+<head>
+<title>Save As</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=5">
+<style>
+body {
+  background-color: ThreeDFace;
+  padding: 1em 0.6em 1em 0.6em;
+  margin: 0px;
+  font-size: small;
+}
+button {
+  border: 1px solid ButtonShadow;
+  font-size: x-small;
+  text-align: center;
+}
+
+.icon {
+  cursor: default;
+  color: WindowText;
+  width: 1em;
+  font-size: 3em;
+  text-align: center;
+  font-family: Wingdings;
+  vertical-align: middle;
+}
+input {
+  vertical-align: middle;
+}
+
+#base-table {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#save-in {
+  padding-left: 4px;
+  padding-right: 200px;
+}
+
+#targets-container {
+  color: HighlightText;
+  white-space: nowrap;
+  background-color: GrayText;
+  font-size: x-small;
+  margin: 0px;
+  padding: 0px;
+}
+#targets-container td {
+  text-align: left;
+  padding: 4px 2px;
+  border: 1px solid GrayText;
+}
+#targets-container td.pushed {
+  border: 1px inset white;
+}
+#targets-container input {
+  vertical-align: middle;
+  display: inline-block;
+  width: 2em;
+  /*display: none;*/
+}
+#targets-container label {
+  vertical-align: middle;
+  display: inline-block;
+}
+
+#filelist-container {
+  /*border: 2px inset white;*/
+  width: 100%;
+  height: 100%;
+  /*background-color: Window;*/
+}
+
+#filename-container {
+  position: relative;
+  margin-top: 0.5em;
+  width: 100%;
+  padding: 0px 5.5em 0px 5em;
+}
+#listbox {
+  width: 100%;
+  height: 100%;
+  border-width: 0px;
+}
+
+
+td, tr {
+  white-space: nowrap;
+  padding: 0px;
+  margin: 0px;
+}
+#save-buttons {
+  position: absolute;
+  right: 0.3em;
+  top: 0.3em;
+}
+
+#contents {
+}
+.space {
+  margin-left: 0.5em;
+}
+</style>
+</head>
+
+
+<body scroll="no">
+<div id="contents">
+
+
+
+<table id="base-table">
+<tr>
+<td colspan="5">
+  <p id="message-container"></p>
+</td>
+</tr>
+
+<tr>
+<td>
+  Save in: 
+</td>
+<td id="save-in">
+  <input onchange="updateResult()" id="pathbox" readonly type="text" size="10" style="width:100%; background-color:ThreedFace;" value="c:\">
+  <button onclick="folderselect()" style="vertical-align: middle;">Choose</button>&nbsp;
+  <button onclick="openCurrentFolder()" class="icon" style="font-size:x-small; line-height: 1em; width: 2em;">1</button>
+</tr>
+</tr>
+
+<tr>
+<td style="vertical-align: top; width:1%;">
+  <table id="targets-container" border="0" cellspacing="0" cellpadding="0">
+  <tr><td>
+    <input onclick="folderselect(); updateResult();" name="targets" id="folder" type="radio" value="folder"><label for="folder"><span class="icon">0</span><br>Folder</label>
+  </td></tr>
+  <tr><td>
+    <input onclick="updateResult()" name="targets" id="documents" type="radio" value="documents"><label for="documents"><span class="icon">1</span><br>Documents</label>
+  </td></tr>
+  <tr><td>
+    <input onclick="updateResult();" name="targets" id="desktop" type="radio" value="desktop" checked><label for="desktop"><span class="icon">&#xff;</span><br>Desktop</label>
+  </td></tr>
+  </table>
+</td>
+<td style="padding-left:4px;">
+  <div id="filelist-container">
+    <select id="listbox" size="8" onchange="updateFileNameBox()"></select>
+  </div>
+</td>
+</tr>
+
+<tr>
+<td colspan="5">
+
+
+<table id="filename-container">
+<tr>
+  <td>File name:</span></td>
+  <td width="100%"><input onkeyup="updateResult()" id="fileNameInput" type="text" size="30" style="width:100%;"></td>
+  <td><button id="savebutton" style="width: 6em" onclick="save()">Save</button></td>
+</tr>
+<tr>
+  <td>Result:</td>
+  <td width="100%"><input id="outputPath" type="text" size="30" style="width:100%; background-color:ThreedFace;" readonly></td>
+  <td><button style="width: 6em" onclick="cancel()">Cancel</button></td>
+</tr>
+</table>
+
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<script>
+window.onerror = function(message, source, line) {
+  alert(message);
+};
+
+var extension = '';
+var result = '';
+var fs;
+var specificFolder = '';
+var target = '';
+var currentTargetFolder = 'c:\\';
+
+window.onload = function() {
+  var args = window.dialogArguments || {};
+  fs = args.fs;
+  extension = args.extension || '';
+
+  var path = args.path || '';
+  var filename = fs.fso.GetFileName(path) || '';
+  fileNameInput.value = filename;
+  //programFolder = args.programFolder || '';
+  
+  specificFolder = fs.fso.GetParentFolderName(path) || '';
+  if( specificFolder ) {
+    pathbox.value = specificFolder;
+    target = args.target || 'folder';
+  }
+  
+  target = args.target || target || 'desktop';
+  for( var i=document.all('targets').length; i--; ) {
+    if( document.all('targets')[i].value === target ) {
+      document.all('targets')[i].checked = true;
+      break;
+    }
+  }
+  currentTargetFolder = getCurrentTarget();
+  
+  var title = args.title || '';
+  if( title )
+    document.title = title;
+  
+  var message = args.message || '';
+  if( message )
+    document.all('message-container').innerText = message;
+
+  
+  updateResult();
+  adjustWindow();
+
+  // set key events
+  fileNameInput.select();
+  fileNameInput.setActive();
+  fileNameInput.onkeypress = function() {
+    if( event.keyCode === 13 ) { // Enter
+      save();
+    }
+  };
+  document.onkeypress = function() {
+    if( event.keyCode === 27 ) { // ESC
+      cancel();
+    }
+  };
+
+};
+
+function adjustWindow() {
+  //window.dialogWidth = 480 + 'px';
+  window.dialogHeight = contents.offsetHeight + 50 + 'px';
+  var x = parseInt(window.dialogLeft);
+  var y = parseInt(window.dialogTop);
+  var w = parseInt(window.dialogWidth);
+  var h = parseInt(window.dialogHeight);
+  if( x < 0 ) x = 0;
+  if( x + w > screen.availWidth ) x = screen.availWidth - w;
+  if( y < 0 ) y = 0;
+  if( y + h > screen.availHeight ) y = screen.availHeight - h;
+  window.dialogLeft = x;
+  window.dialogTop = y;
+  try { // sometimes XP causes error
+    window.moveTo(x, y)
+  } catch(e) {}
+}
+
+var lastTarget = null;
+function getCurrentTarget() {
+  var path = '';
+  var targets = document.getElementsByName('targets');
+  for( var i = targets.length; i--; ) {
+    if( targets[i].checked ) {
+      
+      // update pushed button's appearance
+      if( lastTarget )
+        lastTarget.parentNode.className = '';
+      targets[i].parentNode.className = 'pushed';
+      lastTarget = targets[i];
+
+      switch( targets[i].value ) {
+        case 'desktop':
+          path = fs.WshShell.SpecialFolders('Desktop');
+          break;
+        case 'documents':
+          path = fs.WshShell.SpecialFolders('MyDocuments');
+          break;
+        //case 'program':
+        //  return programFolder;
+        case 'folder':
+          path = pathbox.value;
+          break;
+      }
+      break;
+    }
+  }
+
+  return path;
+}
+
+function folderselect() {
+  var path = '';
+  
+  try {
+    path = fs.openFolderDialog({newfolder: true, window:window});
+  } catch(e) {
+    alert('failed to parse the folder\n\n'+e.message);
+  }
+
+  if( path ) {
+    pathbox.value = path;
+    folder.checked = true;
+    updateResult();
+  }
+}
+
+function openCurrentFolder() {
+  fs.shellExecute(currentTargetFolder);
+}
+
+function updateFileList(path) {
+  var f = fs.folder(path, {text: true, nameOnly: true});
+  var files = f.files;
+  var html = [];
+  
+  listbox.options.length = 0;
+  for( var i=0; i < files.length; i++ ) {
+    var file = files[i];
+    if( extension ) {
+      if( !RegExp(extension+'$', 'i').test(file) )
+        continue;
+    }
+    var option = document.createElement('option');
+    option.value = file;
+    option.innerText = file;
+    listbox.appendChild(option);
+  }
+}
+
+function updateFileNameBox(value) {
+  var listbox = document.all('listbox');
+  var value = (listbox.options[listbox.selectedIndex]).text;
+  fileNameInput.value = value;
+  updateResult();
+}
+
+function updateResult() {
+  result = '';
+  outputPath.value = '';
+  
+  currentTargetFolder = getCurrentTarget();
+  updateFileList(currentTargetFolder);
+  pathbox.value = currentTargetFolder;
+
+  var fileName = fileNameInput.value || '';
+  //if( !fileName )
+  //  return;
+  
+  if( /^[a-z]+:/i.test(fileName) )
+    result = fileName;
+  else {
+    path = currentTargetFolder.replace(/[\\/]*$/, '\\') + (fileName || '');
+    result = path;
+  }
+
+  outputPath.value = result;
+  return result;
+}
+
+function save() {
+  var res = updateResult();
+  if( !res || !fileNameInput.value ) {
+    //alert('');
+    return;
+  }
+  window.returnValue = res;
+  window.close();
+}
+function cancel() {
+  window.close();
+}
+
+</script>
+
+</div>
+</body>
+</html>

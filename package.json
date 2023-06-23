@@ -1,0 +1,46 @@
+{
+  "name": "frameless-slideshow",
+  "version": "0.0.1beta",
+  "description": "Frameless slide show application for Windows OS",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "rollup -c --watch",
+    "release": "SET NODE_BUILD_RELEASE=true && npm run ver-update && rollup -c",
+    "ver-update": "node ./script/version.js",
+    "docs": "docsify serve ./docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gitcobra/frameless-slideshow.git"
+  },
+  "keywords": [
+    "hta",
+    "slideshow",
+    "windows"
+  ],
+  "author": "gitcobra <gitpython@outlook.jp>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gitcobra/frameless-slideshow/issues"
+  },
+  "homepage": "https://github.com/gitcobra/frameless-slideshow#readme",
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-strip": "^3.0.2",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "rollup": "^3.20.2",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-copy-watch": "^0.0.1",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-dts": "^5.3.0",
+    "rollup-plugin-html": "^0.2.1"
+  },
+  "dependencies": {
+    "hta-ctx-menu": "^0.0.38",
+    "hta-drop-target": "^1.0.3",
+    "JSON2": "^0.1.0"
+  }
+}

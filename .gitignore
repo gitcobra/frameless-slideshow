@@ -1,0 +1,7 @@
+node_modules/
+tmp/
+dist/
+external/
+test/testjs/
+.vscode/
+frameless-slideshow/

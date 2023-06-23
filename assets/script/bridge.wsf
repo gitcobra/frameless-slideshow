@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+<job>
+<script language="JScript"><![CDATA[
+
+// HTA cannot recieve files from Windows Explorer. This script bridges them.
+
+var WshShell = new ActiveXObject('WScript.Shell');
+var dir = WSH.ScriptFullName.replace(/[^\\]+$/, '');
+var HTAFilePath = '"' + dir + '..\\frameless-slideshow.hta"';
+
+var Args = WSH.Arguments;
+var param = [];
+for( var i=0; i < Args.Length; i++ ) {
+	var val = Args.Item(i);
+	if( !/^\//.test(val) ) {
+		if( !/^"/.test(val) )
+			val = '"' + val + '"';
+	}
+	param.push(val);
+}
+
+//WSH.Echo(param);
+WshShell.Run(HTAFilePath + ' ' + param.join(' '),1 , false)
+
+]]></script>
+</job>
+</package>
