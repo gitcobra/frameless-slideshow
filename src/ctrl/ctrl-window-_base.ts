@@ -1027,6 +1027,13 @@ export abstract class _CtrlWindow extends _CtrlBase {
     else
       this.addToSelectedElementList(sitem);
   }
+  
+  getElements(): CtrlElement[] {
+    return this._childElements;
+  }
+  getLastElement(): CtrlElement | undefined {
+    return this._childElements[this._childElements.length - 1];
+  }
   getSelectedElementList() {
     return this._selectedElements.concat();
   }

@@ -215,4 +215,12 @@ export default {
 
   'about': 'About',
   'goto-homepage': 'Open website',
+
+  'startmenu-create-frame': 'Create New Frame',
+  'startmenu-create-window': 'Create New Window',
+  'startmenu-load-data': 'Load save file',
+  'startmenu-quit': 'Quit',
+  'startmenu-element-open-image': 'Add Image File',
+  'startmenu-element-open-folder': 'Add Image Folder',
+  'startmenu-element-remove': 'Remove',
 };

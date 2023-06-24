@@ -73,6 +73,10 @@ export class OverlayControl implements ViewNode {
       [id: string]: {
         container: HTMLElement
         content: HTMLElement
+        _onmousedown?: EventListener
+        _onmouseup?: EventListener
+        _onmouseover?: EventListener
+        _onmouseout?: EventListener
       }
     }
   };
@@ -165,9 +169,17 @@ export class OverlayControl implements ViewNode {
 
     if( this._locked && !this._disabled )
       this._showOverlay();
+    
+    this._setEvents();
   }
   getUID() {
     return this._UID;
+  }
+  private _setEvents() {
+    this._view.target.attachEvent('onmouseover', this.__mouseOverContainer);
+    this._view.target.attachEvent('onmouseout', this.__mouseOutContainer);
+    //this._view.target.attachEvent('onclick', this.__mouseClickContainer);
+    this._view.target.attachEvent('onmousemove', this.__mouseMoveContainer);
   }
 
   createControl(id: string, opt: ControlContentOption) {
@@ -198,11 +210,12 @@ export class OverlayControl implements ViewNode {
     this.updateControl(id, {initialize:true});
   }
   private _initializeControlView(id: string) {
+    const {left, top, width, height, display, content, zIndex = 0, alpha, filter, onclick, onmouseout, onmouseover/*, onmousedown, onmouseup*/} = this._model[id];
+    
     const view = this._view.controls[id] = {
       container: this._view.doc.createElement('div'),
       content: this._view.doc.createElement('div'),
-    };
-    const {left, top, width, height, display, content, zIndex = 0, alpha, filter, onclick, onmouseout, onmouseover/*, onmousedown, onmouseup*/} = this._model[id];
+    } as OverlayControl["_view"]["controls"][string];
     view.container.style.cssText = `
       display: ${display ? 'inline-block' : 'none'};
       background-image:url(blank);
@@ -220,8 +233,6 @@ export class OverlayControl implements ViewNode {
     view.content.style.cssText = `position:absolute; overflow: hidden; width:100%; height:100%; display: ${display ? 'inline-block' : 'none'};`;
 
     
-    onmouseout && view.container.attachEvent('onmouseout', onmouseout);
-    onmouseover && view.container.attachEvent('onmouseover', onmouseover);
     
     //onclick && view.container.attachEvent('onclick', onclick);
     // *onclick doesn't seem to be working when the srcElement is disappear before firing mouseup.
@@ -229,7 +240,8 @@ export class OverlayControl implements ViewNode {
     let clickTime = 0;
     let clickMovedX = 0;
     let clickMovedY = 0;
-    view.container.attachEvent('onmousedown', (ev) => {
+    
+    const onmousedown = (ev: MSEventObj) => {
       this._hookDisappearing();
       
       if( ev.button !== 1 )
@@ -237,20 +249,31 @@ export class OverlayControl implements ViewNode {
       clickTime = new Date().getTime();
       clickMovedX = ev.screenX;
       clickMovedY = ev.screenY;
-    });
-    view.container.attachEvent('onmouseup', (ev) => {
+    };
+
+    const onmouseup = (ev: MSEventObj) => {
       this._hookDisappearing();
       if( ev.button === 1 && new Date().getTime() - clickTime < MouseDownDelay && Math.abs(ev.screenX - clickMovedX) < 4 && Math.abs(ev.screenY - clickMovedY) < 4 ) {
         if( !this._baseEvents.onclick || this._baseEvents.onclick(ev) !== false )
           onclick?.(ev);
       }
-    });
+    };
+    
+    view.container.attachEvent('onmousedown', onmousedown);
+    view.container.attachEvent('onmouseup', onmouseup);
+    onmouseout && view.container.attachEvent('onmouseout', onmouseout);
+    onmouseover && view.container.attachEvent('onmouseover', onmouseover);
+    
+    view._onmouseout = onmouseout;
+    view._onmouseover = onmouseover;
+    view._onmousedown = onmousedown;
+    view._onmouseup = onmouseup;
     
     view.content.innerHTML = content || '';
     view.container.appendChild(view.content);
     this._view.baseContainer.appendChild(view.container);
 
-    this._setEvents();
+    //this._setEvents();
   }
 
   updateControl(id:string, newDat: Partial<ControlContentOption>) {
@@ -380,12 +403,6 @@ export class OverlayControl implements ViewNode {
     }
   }
 
-  private _setEvents() {
-    this._view.target.attachEvent('onmouseover', this.__mouseOverContainer);
-    this._view.target.attachEvent('onmouseout', this.__mouseOutContainer);
-    //this._view.target.attachEvent('onclick', this.__mouseClickContainer);
-    this._view.target.attachEvent('onmousemove', this.__mouseMoveContainer);
-  }
 
   // event handlers
   private __mouseOverContainer = (ev: MSEventObj) => {
@@ -465,20 +482,21 @@ export class OverlayControl implements ViewNode {
       return;
     this._disposed = true;
 
-    //this._target.detachEvent('onmousedown', this.__dragStart__binded);
-    //this._draggingElement?.detachEvent('onmousemove', this.__dragMove__binded);
-    //this._draggingElement?.detachEvent('onmouseup', this.__dragEnd__binded);
-    /*
-    const target = this._target;
-    type Keys = keyof typeof this._parts;
-    for( const p in this._parts ) {
-      target.removeChild(this._parts[p as Keys] as HTMLElement);
-      delete this._parts[p as Keys];
+    for( const id in this._model ) {
+      const view = this._view.controls[id];
+      const model = this._model[id];
+      view._onmousedown && view.container.detachEvent('onmousedown', view._onmousedown);
+      view._onmouseup && view.container.detachEvent('onmouseup', view._onmouseup);
+      view._onmouseover && view.container.detachEvent('onmouseover', view._onmouseover);
+      view._onmouseout && view.container.detachEvent('onmouseout', view._onmouseout);
     }
 
-    this._target = null as any;
-    this._draggingElement = null as any;
-    */
+    this._view.target.detachEvent('onmouseover', this.__mouseOverContainer);
+    this._view.target.detachEvent('onmouseout', this.__mouseOutContainer);
+    this._view.target.detachEvent('onmousemove', this.__mouseMoveContainer);
+
+    this._view.target.removeChild(this._view.baseBaseContainer);
+    this._view = null as any;
   }
 
 }

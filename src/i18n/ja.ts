@@ -76,6 +76,13 @@ const ja: Partial<typeof en> = {
   'message-ask-save-and-restart': '現在のスライドショーを保存し、アプリケーションをリスタートして下さい。保存後はこのリスタート処理は自動的に実行されます。',
   'message-restarting': 'アプリケーションは $1 秒後にリスタートします。',
 
+  'startmenu-create-frame': 'フレームを作成',
+  'startmenu-create-window': '新しいウインドウを開く',
+  'startmenu-load-data': 'セーブデータを読込',
+  'startmenu-quit': '終了',
+  'startmenu-element-open-image': '画像ファイルを追加',
+  'startmenu-element-open-folder': '画像フォルダを追加',
+  'startmenu-element-remove': '削除',
 };
 
 export default ja;

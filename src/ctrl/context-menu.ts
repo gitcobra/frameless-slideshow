@@ -1182,6 +1182,7 @@ export function getRootCtxMenuParameter(ctx: CtrlRoot): HtaContextMenu["Types"][
               selectedIndex: (() => {for(let i=langs.length;i--;)if(langs[i]===i18n.getLang())return i;})(),
               onchange(ev) {
                 ctx.getModel().setRootWindowSettings({lang: ev.value});
+                ctx.refreshStartingMenu();
               }
             }
             

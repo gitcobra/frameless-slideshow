@@ -1,6 +1,6 @@
 {
   "name": "frameless-slideshow",
-  "version": "0.0.1beta",
+  "version": "0.0.2beta",
   "description": "Frameless slide show application for Windows OS",
   "main": "index.js",
   "type": "module",

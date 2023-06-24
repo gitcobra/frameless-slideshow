@@ -97,7 +97,7 @@ const BuildConfig = [
     plugins: [
       ...RELEASE ? [
         del({
-          targets: [`${dist}/*.js`, `${dist}/*.ts`, `${dist}/dts`],
+          targets: [`${dist}/**/*`],
           hook: 'buildStart',
           verbose: true,
         }),

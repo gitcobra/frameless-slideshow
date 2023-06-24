@@ -53,7 +53,7 @@ The slideshow will automatically start if you added multiple images. It can be c
 
 #### 4. Customize the slideshow
 
-You can move and resize the frame. If you want to add another frame, right click on the window and its context menu will be opened. Then select "New Frame" -> "Add New Frame". A variety of settings are also available on the menu.
+You can move and resize the frame. If you want to add another frame, right click on the window to open its context menu, then select "New Frame" -> "Add New Frame". A variety of settings are also available on the menu.
 
 ![](usage-004.png ':size=300')
 
@@ -68,7 +68,7 @@ When you click "Exit" on the context menu, it will ask if you want to save the c
 
 #### How to Attach Picture Frame
 
-Although this application is named "frameless", its one of the fun features is the Picture Frame.
+Although this application is named "Frameless", its one of the fun features is the Picture Frame.
 
 **For simple rectangular picture frames**
 
@@ -128,7 +128,7 @@ If you want to use a picture frame that is not rectangular, you need a shape dat
 
 #### Other Details
 
-Coming soon...
+Currently under construction.
 
 
 

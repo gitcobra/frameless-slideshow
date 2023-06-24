@@ -12,6 +12,7 @@ import { MovedCoordinates, ResizableBorder, ResizableBorderTypes } from "src/uti
 import { ImgInfo } from "src/model/img-database";
 import HtaContextMenu from "hta-ctx-menu";
 import { getElementCtxMenuParameter } from "./context-menu";
+import { $t } from "../i18n/i18n";
 import * as fs from "../utils/filesystem";
 
 
@@ -695,13 +696,13 @@ export class CtrlElement extends _CtrlBase {
   
   protected _DefaultCommands = [
     {
-      label: 'Open Image File',
+      label: $t('startmenu-element-open-image'),
       onclick: () => {
         this.addImage();
       },
     },
     {
-      label: 'Open Image Folder',
+      label: $t('startmenu-element-open-folder'),
       onclick: () => {
         this.addFolder();
       },
@@ -717,11 +718,11 @@ export class CtrlElement extends _CtrlBase {
     },
     */
     {
-      label: 'Create Frame',
+      label: $t('startmenu-create-frame'),
       onclick: (ev: MSEventObj) => {
         const parent = this._parentCtrl;
         const size = parent.getView().getViewFramePos();
-        const item = parent.createNewChildElement(undefined, undefined, size.w / 4, size.h/4);
+        const item = parent.createNewChildElement(undefined, undefined, size.w / 2, size.h/2);
         
         setTimeout(() => {
           try {
@@ -732,9 +733,16 @@ export class CtrlElement extends _CtrlBase {
       },
     },
     {
-      label: 'Remove',
+      label: $t('startmenu-element-remove'),
       onclick: () => {
         this.close();
+        setTimeout(() => {
+          try {
+          const parent = this._parentCtrl;
+          const item = parent.getLastElement();
+          item && parent.addToSelectedElementList(item);
+          } catch(e) {}
+        }, 0);
       }
     }
   ];

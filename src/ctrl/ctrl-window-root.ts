@@ -478,15 +478,22 @@ export class CtrlRoot extends _CtrlWindow {
     this.close();
   }
 
-  protected _DefaultCommands = [
+  refreshStartingMenu() {
+    const disabled = this._startingOverlay.isDisabled();
+    this._DefaultCommands = this._DefaultCommands_refresh();
+    this._startingOverlay.dispose();
+    this._createStartingOverlay();
+    this._startingOverlay.disable(disabled);
+  }
+  protected _DefaultCommands_refresh = () => [
     {
-      label: 'Create Frame',
+      label: $t('startmenu-create-frame'),
       onclick: () => {
         this._createNewFrame();
       },
     },
     {
-      label: 'Load save file',
+      label: $t('startmenu-load-data'),
       onclick: () => {
         const path = this.openDialogToLoadFlss();
         if( path ) {
@@ -497,18 +504,20 @@ export class CtrlRoot extends _CtrlWindow {
     },
     
     {
-      label: 'Create New Window',
+      label: $t('startmenu-create-window'),
       onclick: () => {
         this.openNewWindow();
       },
     },
     {
-      label: 'Quit',
+      label: $t('startmenu-quit'),
       onclick: () => {
         this.close();
       }
     }
   ];
+  protected _DefaultCommands = this._DefaultCommands_refresh();
+
   private _createNewFrame(margin=0.1) {
     const size = this.getModel().getFramePos();
     const w = size.w * (1 - margin) |0;
