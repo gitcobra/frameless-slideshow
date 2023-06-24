@@ -292,9 +292,36 @@ export class ViewElement extends _ViewBase {
 
 
   dispose() {
-    this._container.parentNode?.removeChild(this._container);
     this._document = null as any;
     this._window = null as any;
+
+    //this._error.innerHTML = '';
+    //this._title.innerHTML = '';
+
+    this._title = null as any;
+    this._name = null as any;
+    this._commands = null as any;
+    this._error = null as any;
+    this._errorMessage = null as any;
+    
+    this._image = null as any;
+    this._imgElement = null as any;
+    this._framedImg = null as any;
+    this._framedVml = null as any;
+    this._vmlElement = null as any;
+
+    this._border1.style.filter = '';
+    this._border1.innerHTML = '';
+    this._border2.style.filter = '';
+    this._border2.innerHTML = '';
+    this._filterContainer.style.filter = '';
+    this._backgroundElement.style.filter = '';
+    this._border1 = null as any;
+    this._border2 = null as any;
+    this._filterContainer = null as any;
+    this._shapeImage = null as any;
+
+    this._container.parentNode?.removeChild(this._container);
   }
 
   protected $L() {

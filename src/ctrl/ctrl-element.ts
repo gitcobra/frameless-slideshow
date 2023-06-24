@@ -734,7 +734,7 @@ export class CtrlElement extends _CtrlBase {
     },
     {
       label: $t('startmenu-element-remove'),
-      onclick: () => {
+      onclick: (ev: MSEventObj) => {
         this.close();
         setTimeout(() => {
           try {
@@ -971,9 +971,10 @@ export class CtrlElement extends _CtrlBase {
   }
   
   close() {
+    this._overlayCTRL.dispose();
     super.close();
     this._parentCtrl?.removeChildElement(this);
-    this._model.dispose();
+    this._parentCtrl?.removeFromSelectedElementList(this, false);
   }
 
   protected $L() {

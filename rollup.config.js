@@ -26,10 +26,13 @@ import replace from '@rollup/plugin-replace';
 const DEV = !!process.env.ROLLUP_WATCH;
 const RELEASE = !!process.env.NODE_BUILD_RELEASE;
 
+const Ver = JSON.parse(fs.readFileSync('./script/version.json'));
+const VERSION_TXT = `${Ver.major}.${Ver.minor}.${String(Ver.build)}${Ver.tag}`;
+
 // bundle file name
 const bundleName = `frameless-slideshow`;
 // destination
-const dist = `${RELEASE ? bundleName : 'dist'}`;
+const dist = `${RELEASE ? `release/${bundleName}-v${VERSION_TXT}` : 'dist'}`;
 
 // sites
 const GITHUB_URL = `https://github.com/gitcobra/frameless-slideshow`;
@@ -38,9 +41,6 @@ const GITHUB_URL = `https://github.com/gitcobra/frameless-slideshow`;
 // write banner
 let BANNER_TXT = '';
 if( !DEV ) {
-  const Ver = JSON.parse(fs.readFileSync('./script/version.json'));
-  const VERSION_TXT = `${Ver.major}.${Ver.minor}.${String(Ver.build)}${Ver.tag}`;
-
   BANNER_TXT = `/*
   title: ${bundleName}
   version: ${VERSION_TXT}
@@ -97,7 +97,7 @@ const BuildConfig = [
     plugins: [
       ...RELEASE ? [
         del({
-          targets: [`${dist}/**/*`],
+          targets: [`release/**/*`],
           hook: 'buildStart',
           verbose: true,
         }),

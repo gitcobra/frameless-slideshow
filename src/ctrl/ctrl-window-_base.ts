@@ -698,7 +698,8 @@ export abstract class _CtrlWindow extends _CtrlBase {
     }
   }
   removeSelectedChildElements() {
-    for( const element of this._selectedElements ) {
+    for( let i = this._selectedElements.length; i--; ) {
+      const element = this._selectedElements[i];
       element.close();
     }
   }
@@ -996,14 +997,16 @@ export abstract class _CtrlWindow extends _CtrlBase {
 
     return;
   }
-  removeFromSelectedElementList(sitem: CtrlElement) {
+  removeFromSelectedElementList(sitem: CtrlElement, setBorder = true) {
     console.log(`${this.$L()}removeFromSelectedElementList`, 'green');
     for( let i = this._selectedElements.length; i--; ) {
       const item = this._selectedElements[i];
       if( item === sitem ) {
-        item.getView().showBorder(false);
         this._selectedElements.splice(i, 1);
-        item.setSelected(false);
+        if( setBorder ) {
+          item.getView().showBorder(false);
+          item.setSelected(false);
+        }
         
         return true;
       }
@@ -1343,6 +1346,7 @@ export abstract class _CtrlWindow extends _CtrlBase {
     }
     
     super.close();
+    this._overlayCTRL?.dispose();
     this._docEva.detachAll();
     this._bodyEva.detachAll();
     this._winEva.detachAll();

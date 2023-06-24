@@ -73,6 +73,7 @@ export class OverlayControl implements ViewNode {
       [id: string]: {
         container: HTMLElement
         content: HTMLElement
+        _initialized: boolean
         _onmousedown?: EventListener
         _onmouseup?: EventListener
         _onmouseover?: EventListener
@@ -151,6 +152,7 @@ export class OverlayControl implements ViewNode {
     this._view.controls[id] = {
       container: baseBaseContainer,
       content: baseContainer,
+      _initialized: false,
     };
 
     // create controls
@@ -210,11 +212,15 @@ export class OverlayControl implements ViewNode {
     this.updateControl(id, {initialize:true});
   }
   private _initializeControlView(id: string) {
+    if( this._disposed )
+      return;
+    
     const {left, top, width, height, display, content, zIndex = 0, alpha, filter, onclick, onmouseout, onmouseover/*, onmousedown, onmouseup*/} = this._model[id];
     
     const view = this._view.controls[id] = {
       container: this._view.doc.createElement('div'),
       content: this._view.doc.createElement('div'),
+      _initialized: true,
     } as OverlayControl["_view"]["controls"][string];
     view.container.style.cssText = `
       display: ${display ? 'inline-block' : 'none'};
@@ -277,6 +283,8 @@ export class OverlayControl implements ViewNode {
   }
 
   updateControl(id:string, newDat: Partial<ControlContentOption>) {
+    if( this._disposed )
+      return;
     //const _base = id === '_baseContainer';
     const model = this._model[id]; //!_base ? this._model[id] : this._baseModel;
     const model_prev = this._model_prev[id]; //!_base ? this._model_prev[id] : this._baseModel;
@@ -317,12 +325,19 @@ export class OverlayControl implements ViewNode {
       //const _base = id === '_baseContainer';
       const model = this._model[id]; //!_base ? this._model[id] : this._baseModel;
       const model_prev = this._model_prev[id]; // !_base ? this._model_prev[id] : this._baseModel;
+      if( !model )
+        continue;
+
+      const view = this._view.controls[id];
       
       const updated = this._updated[id];
       let p: keyof typeof updated;
       
       let updatedCssText = [];
       for( p in updated ) {
+        if( p !== 'initialize' && (!view || !view._initialized) )
+          continue;
+
         switch(p) {
           case 'width':
           case 'height':
@@ -336,9 +351,11 @@ export class OverlayControl implements ViewNode {
             if( disp )
               updatedCssText.push(`display: inline-block;`);
             if( id !== this._baseModelId ) {
-              this._view.controls[id].container.filters.item('DXImageTransform.Microsoft.Fade').apply();
-              this._view.controls[id].content.style.display = model['display'] ? 'inline-block' : 'none';
-              this._view.controls[id].container.filters.item('DXImageTransform.Microsoft.Fade').play();
+              try {
+                view.container.filters.item('DXImageTransform.Microsoft.Fade').apply();
+                view.content.style.display = model['display'] ? 'inline-block' : 'none';
+                view.container.filters.item('DXImageTransform.Microsoft.Fade').play();
+              } catch(e) {}
             }
             //if( !disp )
             //  updatedCssText.push(`display: none;`);
@@ -347,7 +364,7 @@ export class OverlayControl implements ViewNode {
             updatedCssText.push(model[p]);
             break;
           case 'content':
-            this._view.controls[id].content.innerHTML = model[p] || '';
+            view.content.innerHTML = model[p] || '';
             break;
           case 'initialize':
             this._initializeControlView(id);
@@ -365,7 +382,7 @@ export class OverlayControl implements ViewNode {
             continue;
           }
         }
-        this._view.controls[id].container.style.cssText += ';' + updatedCssText.join(';');
+        view.container.style.cssText += ';' + updatedCssText.join(';');
       }
     }
   }
@@ -392,6 +409,8 @@ export class OverlayControl implements ViewNode {
       return;
     if( !flag && this._locked )
       return;
+    
+    //console.log('_showOverlay'+this._UID, 'green');
     for( const p in this._model ) {
       this.updateControl(p, {display: flag});
     }
@@ -418,7 +437,7 @@ export class OverlayControl implements ViewNode {
     this._showOverlay(true);
   }
   private __mouseOutContainer = (ev: MSEventObj) => {
-    //console.log(`OverlayControl#__mouseOut`, 'green');
+    //console.log(`OverlayControl#__mouseOut` + this._UID, 'green');
     if( this._baseEvents.onmouseout?.(ev) === false || this._ignoreMouseOut )
       return;
     if( ev.toElement && this._view.target.contains(ev.toElement as HTMLElement) )
@@ -441,6 +460,7 @@ export class OverlayControl implements ViewNode {
   //}
   private __mousemoveTimeoutId: number = 0;
   private __mouseMoveContainer = (ev: MSEventObj) => {
+    
     if( this._disabled || this._baseEvents.onmousemove?.(ev) === false )
       return;
     this._showOverlay(true);
@@ -483,8 +503,16 @@ export class OverlayControl implements ViewNode {
     this._disposed = true;
 
     for( const id in this._model ) {
+      delete this._model[id];
+      delete this._updated[id];
       const view = this._view.controls[id];
-      const model = this._model[id];
+      if( !view )
+        continue;
+      delete this._view.controls[id];
+      
+      view.container.style.filter = '';
+      view.content.innerHTML = '';
+
       view._onmousedown && view.container.detachEvent('onmousedown', view._onmousedown);
       view._onmouseup && view.container.detachEvent('onmouseup', view._onmouseup);
       view._onmouseover && view.container.detachEvent('onmouseover', view._onmouseover);
@@ -494,6 +522,7 @@ export class OverlayControl implements ViewNode {
     this._view.target.detachEvent('onmouseover', this.__mouseOverContainer);
     this._view.target.detachEvent('onmouseout', this.__mouseOutContainer);
     this._view.target.detachEvent('onmousemove', this.__mouseMoveContainer);
+    this.__mouseOverContainer = this.__mouseOutContainer = this.__mouseMoveContainer = null as any;
 
     this._view.target.removeChild(this._view.baseBaseContainer);
     this._view = null as any;

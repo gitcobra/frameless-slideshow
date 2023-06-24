@@ -1,6 +1,6 @@
 {
   "name": "frameless-slideshow",
-  "version": "0.0.2beta",
+  "version": "0.0.4beta",
   "description": "Frameless slide show application for Windows OS",
   "main": "index.js",
   "type": "module",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "hta-ctx-menu": "^0.0.38",
-    "hta-drop-target": "^1.0.3",
+    "hta-drop-target": "^1.0.4",
     "JSON2": "^0.1.0"
   }
 }

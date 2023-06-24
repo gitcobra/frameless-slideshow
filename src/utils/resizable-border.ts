@@ -50,6 +50,9 @@ let counter = 0;
 
 export class ResizableBorder {
   static dragging = false;
+  private _dragging = false;
+  private _draggingType: ResizableBorderTypes = 'move';
+
   private _capturedElement: HTMLElement | null = null;
   private _target: HTMLElement;
   private _parts: {
@@ -62,7 +65,7 @@ export class ResizableBorder {
     topRight: HTMLElement
     topLeft: HTMLElement
   };
-  private _draggingType: ResizableBorderTypes = 'move';
+  
 
   private _isWindow = false;
   private _resizable = true;
@@ -255,6 +258,7 @@ export class ResizableBorder {
     
     console.log(`#__dragStart(start)`);
     ResizableBorder.dragging = true;
+    this._dragging = true;
     
     if( this._cancelBubble )
       ev.cancelBubble = true;
@@ -313,6 +317,7 @@ export class ResizableBorder {
     this._capturedElement?.releaseCapture();
     this._capturedElement = null;
     ResizableBorder.dragging = false;
+    this._dragging = false;
 
     if( !this._resizable ) {
       this._setPartsStyle('cursor', '');
@@ -442,7 +447,7 @@ export class ResizableBorder {
     }
     
     for( const targ of targets ) {
-      if( targ === this )
+      if( targ === this || targ._disposed )
         continue;
       
       const telm = targ._target;
@@ -493,15 +498,28 @@ export class ResizableBorder {
       return;
     this._disposed = true;
 
+    this.ondragstart = null as any;
+    this.ondragmove = null as any;
+    this.ondragend = null as any;
+    
     this._target.detachEvent('onmousedown', this.__dragStart__binded);
     this._target.detachEvent('onmousemove', this.__dragMove__binded);
     this._target.detachEvent('onmouseup', this.__dragEnd__binded);
+    
+    if( this._dragging ) {
+      this.__dragEnd__binded();
+    }
+    this.__dragStart__binded = null as any;
+    this.__dragMove__binded = null as any;
+    this.__dragEnd__binded = null as any;
+    this.ondragstart = this.ondragmove = this.ondragend = null as any;
+    clearTimeout(this._autoEndDelayTimeoutId);
 
     const target = this._target;
     type Keys = keyof typeof this._parts;
     for( const p in this._parts ) {
       target.removeChild(this._parts[p as Keys] as HTMLElement);
-      delete this._parts[p as Keys];
+      this._parts[p as Keys] = null as any;
     }
 
     this._target = null as any;

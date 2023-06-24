@@ -5,3 +5,4 @@ external/
 test/testjs/
 .vscode/
 frameless-slideshow/
+release/

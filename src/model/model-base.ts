@@ -70,6 +70,7 @@ export abstract class _ModelBase {
   private _listLinked: boolean = false;
   protected abstract _parent: ModelWindow | ModelRoot | null;
   private _currentShapeData: ImgInfo | null = null;
+  private _disposed = false;
 
   public _blankImgInfo!: ImgInfo;
   static {
@@ -286,6 +287,8 @@ export abstract class _ModelBase {
   private _firstFailedIndex = -1;
   private _preloadNext(offset = 1) {
     console.log(`${this.$L()}_preloadNext`, 'olive');
+    if( this._disposed )
+      return;
     
     // if the length is less than 2, stop slideshow
     if( this._list.getLength() <= 1 ) {
@@ -1214,9 +1217,16 @@ export abstract class _ModelBase {
     return `[${this.getUniqueId()}]ModelBase#`;
   }
   dispose() {
-    // TODO:
+    if( this._disposed )
+      return;
+    this._disposed = true;
     // detach all model events
     // stop interval timers
+    for( const ename in this._modelEventListeners ) {
+      delete this._modelEventListeners[ename as ModelEventNames];
+    }
+    clearTimeout(this._slideShowTimeoutId);
+    clearTimeout(this._timeoutIdForLoading);
   }
 }
 

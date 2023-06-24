@@ -41,6 +41,7 @@ export abstract class _CtrlBase {
   protected _dragging = false;
   protected _preparedFramePos: BoxPosition | null = null;
   protected _pinned = false;
+  protected _closed = false;
   
   // HACK: when this public flag is true, the frame size is set to the first loaded image's size. for drag & dropped images.
   __fitFrameToFirstImage = false;
@@ -579,11 +580,17 @@ export abstract class _CtrlBase {
   
   //TODO
   close() {
+    if( this._closed )
+      return;
+    this._closed = true;  
     this._startingOverlay.dispose();
     this.getModel().stopSlideShow();
     this._parentCtrl?.removeResizableTarget(this._resizableBorder);
+    this._resizableBorder.dispose();
+    this._resizableBorder = null as any;
     this._viewEva.dispose();
     this._view.dispose();
+    this._view = null as any;
     this._model.dispose();
   }
 }
